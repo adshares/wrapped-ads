@@ -18,7 +18,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
 
     }
 
-    function wrapTo(address account, uint256 amount, uint64 from, uint64 txid) public onlyMinter returns (bool) {
+    function wrapTo(address account, uint256 amount, uint64 from, uint64 txid) public onlyMinter whenNotPaused returns (bool) {
         _checksumCheck(from);
         emit Wrap(account, from, txid, amount);
         _mint(account, amount);
@@ -30,7 +30,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
      * @dev Unwrap and destroy `amount` tokens from the caller.
      *
      */
-    function unwrap(uint256 amount, uint64 to) public {
+    function unwrap(uint256 amount, uint64 to) public whenNotPaused {
         _checksumCheck(to);
         emit Unwrap(_msgSender(), to, amount);
         _burn(_msgSender(), amount);
@@ -40,7 +40,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
      * @dev Unwraps and destroys `amount` tokens from `account`.`amount` is then deducted
      * from the caller's allowance.
      */
-    function unwrapFrom(address account, uint256 amount, uint64 to) public {
+    function unwrapFrom(address account, uint256 amount, uint64 to) public whenNotPaused {
         _checksumCheck(to);
         emit Unwrap(account, to, amount);
         _burnFrom(account, amount);
