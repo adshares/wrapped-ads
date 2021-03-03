@@ -13,7 +13,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
 
     mapping (address => uint256) private _minterAllowances;
 
-    constructor () public ERC20Detailed("Wrapped ADS", "WADS", 11) {
+    constructor () public ERC20Detailed("Adshares", "ADS", 11) {
 
     }
 
