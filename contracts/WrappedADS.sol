@@ -3,21 +3,23 @@ pragma solidity ^0.5.17;
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Pausable.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
 import "./OwnerRole.sol";
 
 contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRole {
     using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
     mapping (address => uint256) private _minterAllowances;
 
-    /**
-     *
-     */
     constructor () public ERC20Detailed("Wrapped ADS", "WADS", 11) {
 
     }
 
+    /**
+     *  Wraps received native ADS tokens and mint wrapped tokens. Logs native tx sender and id.
+     */
     function wrapTo(address account, uint256 amount, uint64 from, uint64 txid) public onlyMinter whenNotPaused returns (bool) {
         _checksumCheck(from);
         emit Wrap(account, from, txid, amount);
@@ -27,7 +29,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
     }
 
     /**
-     * @dev Unwrap and destroy `amount` tokens from the caller.
+     * Unwrap and destroy `amount` tokens from the caller. Logs native ADS address to receive unwrapped tokens.
      *
      */
     function unwrap(uint256 amount, uint64 to) public whenNotPaused {
@@ -37,8 +39,9 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
     }
 
     /**
-     * @dev Unwraps and destroys `amount` tokens from `account`.`amount` is then deducted
+     * Unwraps and destroys `amount` tokens from `account`.`amount` is then deducted
      * from the caller's allowance.
+     * Logs native ADS address to receive unwrapped tokens.
      */
     function unwrapFrom(address account, uint256 amount, uint64 to) public whenNotPaused {
         _checksumCheck(to);
@@ -60,7 +63,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
     }
 
     /**
-     * @dev Atomically increases the minterAllowance granted to `minter`.
+     * Atomically increases the minterAllowance granted to `minter`.
      *
      */
     function increaseMinterAllowance(address minter, uint256 addedValue) public onlyOwner returns (bool) {
@@ -69,7 +72,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
     }
 
     /**
-     * @dev Atomically decreases the minterAllowance granted to `minter`
+     * Atomically decreases the minterAllowance granted to `minter`
      *
      */
     function decreaseMinterAllowance(address minter, uint256 subtractedValue) public onlyOwner returns (bool) {
@@ -101,6 +104,24 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
         _removePauser(account);
     }
 
+    /**
+     * Transfer all Ether held by the contract to the owner.
+     */
+    function reclaimEther() external onlyOwner {
+        _msgSender().transfer(address(this).balance);
+    }
+
+    /**
+     * Reclaim all ERC20 compatible tokenst
+     */
+    function reclaimToken(IERC20 _token) external onlyOwner {
+        uint256 balance = _token.balanceOf(address(this));
+        _token.safeTransfer(_msgSender(), balance);
+    }
+
+    /**
+     * Verify checksum for ADS address.
+     */
     function _checksumCheck(uint64 adsAddress) pure internal {
         uint8 x;
         uint16 crc = 0x1D0F;
