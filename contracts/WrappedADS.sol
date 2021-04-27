@@ -33,8 +33,20 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
      *
      */
     function unwrap(uint256 amount, uint64 to) public whenNotPaused {
+        _unwrap(amount, to, 0);
+    }
+
+    /**
+     * Unwrap and destroy `amount` tokens from the caller. Logs native ADS address to receive unwrapped tokens.
+     *
+     */
+    function unwrapMessage(uint256 amount, uint64 to, uint128 message) public whenNotPaused {
+        _unwrap(amount, to, message);
+    }
+
+    function _unwrap(uint256 amount, uint64 to, uint128 message) internal {
         _checksumCheck(to);
-        emit Unwrap(_msgSender(), to, amount);
+        emit Unwrap(_msgSender(), to, amount, message);
         _burn(_msgSender(), amount);
     }
 
@@ -43,9 +55,9 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
      * from the caller's allowance.
      * Logs native ADS address to receive unwrapped tokens.
      */
-    function unwrapFrom(address account, uint256 amount, uint64 to) public whenNotPaused {
+    function unwrapFrom(address account, uint256 amount, uint64 to, uint128 message) public whenNotPaused {
         _checksumCheck(to);
-        emit Unwrap(account, to, amount);
+        emit Unwrap(account, to, amount, message);
         _burnFrom(account, amount);
     }
 
@@ -136,6 +148,6 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
     }
 
     event Wrap(address indexed to, uint64 indexed from, uint64 txid, uint256 value);
-    event Unwrap(address indexed from, uint64 indexed to, uint256 value);
+    event Unwrap(address indexed from, uint64 indexed to, uint256 value, uint128 message);
     event MinterApproval(address indexed minter, uint256 value);
 }
