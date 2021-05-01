@@ -147,7 +147,7 @@ contract WrappedADS is ERC20, ERC20Detailed, ERC20Pausable, OwnerRole, MinterRol
         require(crc == (adsAddress & 0xFFFF), "WrappedADS: invalid ADS address");
     }
 
-    event Wrap(address indexed to, uint64 indexed from, uint64 txid, uint256 value);
-    event Unwrap(address indexed from, uint64 indexed to, uint256 value, uint128 message);
-    event MinterApproval(address indexed minter, uint256 value);
+    event Wrap(address indexed to, uint64 indexed from, uint64 txid, uint256 amount);
+    event Unwrap(address indexed from, uint64 indexed to, uint256 amount, uint128 message);
+    event MinterApproval(address indexed minter, uint256 amount);
 }
